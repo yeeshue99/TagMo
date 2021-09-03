@@ -1,6 +1,7 @@
 package com.hiddenramblings.tagmo;
 
 import com.hiddenramblings.tagmo.ptag.PTagKeyManager;
+import com.smartrac.nfc.NfcNtag;
 
 import java.io.IOException;
 
@@ -36,6 +37,15 @@ public class TagWriter {
             TagMo.Debug(TAG, R.string.lock_write);
         } catch (Exception e) {
             throw new Exception(TagMo.getStringRes(R.string.lock_write_error), e);
+        }
+    }
+
+    public static void writeToN2Raw(NfcNtag mifare, byte[] tagData) throws Exception {
+        try {
+            mifare.amiiboFastWrite(3, 129, tagData);
+            TagMo.Debug(TAG, R.string.data_write);
+        } catch (Exception e) {
+            throw new Exception(TagMo.getStringRes(R.string.data_write_error), e);
         }
     }
 
@@ -133,6 +143,17 @@ public class TagWriter {
         }
     }
 
+    public static void writeToN2Auto(NfcNtag mifare, byte[] tagData) throws Exception {
+        TagMo.Debug(TAG, Util.bytesToHex(tagData));
+
+        try {
+            mifare.amiiboFastWrite(3, 129, tagData);
+            TagMo.Debug(TAG, R.string.data_write);
+        } catch (Exception e) {
+            throw new Exception(TagMo.getStringRes(R.string.data_write_error), e);
+        }
+    }
+
     public static void restoreTag(NTAG215 mifare, byte[] tagData, boolean ignoreUid, KeyManager keyManager, boolean validateNtag) throws Exception {
         if (!ignoreUid)
             validate(mifare, tagData, validateNtag);
@@ -207,6 +228,13 @@ public class TagWriter {
 
             System.arraycopy(pages, 0, tagData, dstIndex, dstCount);
         }
+
+        TagMo.Debug(TAG, Util.bytesToHex(tagData));
+        return tagData;
+    }
+
+    public static byte[] readFromN2(NfcNtag tag) throws Exception {
+        byte[] tagData = tag.amiiboFastRead(0, 0, 0);
 
         TagMo.Debug(TAG, Util.bytesToHex(tagData));
         return tagData;

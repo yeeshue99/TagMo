@@ -136,15 +136,15 @@ public class NfcNtag implements TagTechnology {
 
     }
     
-    private byte[] amiiboFastRead(int startAddr, int endAddr, int bank) {
+    public byte[] amiiboFastRead(int startAddr, int endAddr, int bank) {
         return internalFastRead(new IFastRead() {
             @Override
             public byte[] doFastRead(int startAddr, int endAddr, int bank) {
                 try {
                     return nfca.transceive(new byte[] {
                             NfcNtagOpcode.N2_FAST_READ,
-                            (byte)(startAddr & 0xFF),
-                            (byte)(endAddr & 0xFF),
+                            (byte) (startAddr & 0xFF),
+                            (byte) (endAddr & 0xFF),
                             (byte) (bank & 0xFF)
                     });
                 } catch (Exception unused) {
