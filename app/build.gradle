@@ -1,10 +1,5 @@
 apply plugin: 'com.android.application'
 
-def commit = 'git rev-parse --short HEAD'.execute().text.trim()
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
 android {
     compileSdkVersion 31
 
@@ -21,18 +16,9 @@ android {
             }
         }
 
+        def commit = 'git rev-parse --short HEAD'.execute().text.trim()
         buildConfigField "String", "COMMIT", "\""+commit+"\""
-    }
-
-    project.archivesBaseName = "TagMo-" + commit
-
-    signingConfigs {
-        debug {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-        }
+        project.archivesBaseName = "TagMo-" + commit
     }
 
     buildTypes {
@@ -43,13 +29,27 @@ android {
         }
         debug {
             initWith release
-            signingConfig signingConfigs.debug
+            debuggable true
+            try {
+                def keystoreProps = new Properties()
+                keystoreProps.load(new FileInputStream(rootProject.file("keystore.properties")))
+                signingConfigs {
+                    debug {
+                        keyAlias keystoreProps['keyAlias']
+                        keyPassword keystoreProps['keyPassword']
+                        storeFile file(keystoreProps['storeFile'])
+                        storePassword keystoreProps['storePassword']
+                    }
+                }
+                buildTypes.debug.signingConfig signingConfigs.debug
+            } catch (FileNotFoundException e) {
+                // Github actions can go $#%& right off with this
+            }
         }
         publish {
             initWith release
             applicationIdSuffix ".eightbit"
         }
-
     }
 
     externalNativeBuild {
